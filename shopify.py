@@ -45,7 +45,7 @@ def scrapeForVariant():
 
 def submitCustomerInfo():
     ##############################################################################
-    #GENERATING CHECKOUT LINK, SUBMITTING CUSTOMER INFO, GETTING COOKIES AND GETTING TO SHIPPING PAGE
+    #GENERATING CHECKOUT LINK, SUBMITTING CUSTOMER INFO, GETTING COOKIES AND GETTING TO PAYMENT PAGE
     ##############################################################################
 
     submitCustomerInfoHeaders = {
@@ -64,7 +64,7 @@ def submitCustomerInfo():
         writeToFile(e)
         frontEndCheckout()
 
-    if 'Continue to shipping method' in resp.content:
+    if b'Continue to shipping method' in resp.content:
         writeToFile('Got to Customer Information Page.\n')
 
     global shopifyGeneratedCheckoutLink
@@ -117,13 +117,11 @@ def submitCustomerInfo():
     if(resp.status_code == 200):
         writeToFile('Successfully submitted customer info to shopify server.\n')
     else:
-        sys.exit()
-
-    #IMPLEMENT THE CAPTCHA BYPASS HERE
+        driver.quit()
 
     resp = session.get(shopifyGeneratedCheckoutLink+"?previous_step=shipping_method&step=payment_method", allow_redirects=True, timeout=4)
 
-    if 'Complete order' or 'Complete order'.upper in resp.content:
+    if b'Complete order' or b'Complete order'.upper in resp.content:
         writeToFile('Successfully bypassed captcha and got to payment method page.\n')
 
     soup = BeautifulSoup(resp.content, 'html.parser')
@@ -133,7 +131,7 @@ def submitCustomerInfo():
 
 def submitPayment():
     ##############################################################################
-    #SUBMITTING SHIPPING METHOD, GET TO PAYMENT METHOD PAGE
+    #SUBMITTING PAYMENT METHOD, GETTING UNIQUE SESSION ID
     ##############################################################################
 
     submitPaymentSessionHeaders = {
@@ -163,6 +161,8 @@ def submitPayment():
         writeToFile(str(r.status_code)+"\n")
 
     sessionIDvalue = json.loads(str(r.text))
+
+    driver.quit()
 
 def frontEndCheckout():
     print('No function yet')
